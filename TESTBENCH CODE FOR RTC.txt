@@ -1,0 +1,44 @@
+//TESTBENCH CODE FOR RTC
+module RTC_counter_tb;
+  reg clk,rst;
+  wire [3:0] hrm,hrl,minm,minl,secm,secl;
+  wire[6:0]sec_l,sec_m,min_m,min_l,hr_m,hr_l;
+  
+  RTC dut(.clk(clk),.rst(rst),.hrm(hrm),
+    .hrl(hrl),
+    .minm(minm),
+    .minl(minl),
+    .secm(secm),
+    .secl(secl),
+     .sec_l(sec_l),
+    .sec_m(sec_m),
+    .min_m(min_m),
+    .min_l(min_l),
+    .hr_m(hr_m),
+    .hr_l(hr_l)
+         );
+  
+  initial clk=0;
+  always#5 clk= ~clk;
+  
+  initial begin
+    rst=1;#10
+    rst=0;
+    
+    #200000;
+    
+    //rst=1;#10;
+    //rst=0;
+    //#100000;
+    
+    $stop;
+  end
+    // Monitor outputs
+  initial begin
+    $display("Time|HRMHRL  | MINMMINL | SECMSECL----seven segmented display out");
+    $monitor("%0t | %0d%0d   %0d%0d      %0d%0d || seven display out = %b | %b | %b | %b | %b | %b",
+             $time, hrm, hrl, minm, minl, secm, secl,hr_m,hr_l,min_m,min_l,sec_m,sec_l);
+  end
+
+endmodule
+    

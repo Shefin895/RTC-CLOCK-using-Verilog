@@ -1,0 +1,67 @@
+//________________ DESGIN CODE FOR RTC CLOCK_________________________________
+
+//DESGIN FOR COUNTER FOR RTC
+module RTC_counter #(parameter N = 9)(input clk,rst,clear,en,output reg [3:0]count,output next);
+  
+  always@(posedge clk)begin
+    if(rst|clear)
+      count<=0;
+    else if(en)begin
+      if(N==count)
+        count<=0;
+    else
+        count<=count+1;
+    end
+  end
+  assign next=(N==count)&&en;
+endmodule
+
+module RTC(input clk,rst,output [3:0] hrm,hrl,minm,minl,secm,secl,
+           output [6:0]sec_l,sec_m,min_m,min_l,hr_m,hr_l);
+  wire  next_secl,next_secm,next_minl,next_minm,next_hrl,next_hrm,reset_clk;
+  wire clear_rst=(hrm==2&&hrl==3 && minm==5&&minl==9 && secm==5 && secl ==9);//CHECKING THE CONDITION FOR RESET THE CLK
+  
+  //seconds
+  RTC_counter #(9) sec_lsb (.clk(clk),.rst(rst),.clear(clear_rst),.en(1'b1),.count(secl),.next(next_secl));
+  RTC_counter #(5) sec_msb (.clk(clk),.rst(rst),.clear(clear_rst),.en(next_secl),.count(secm),.next(next_secm));
+  
+  //min
+  RTC_counter #(9) min_lsb (.clk(clk),.rst(rst),.clear(clear_rst),.en(next_secm),.count(minl),.next(next_minl));
+  RTC_counter #(5) min_msb (.clk(clk),.rst(rst),.clear(clear_rst),.en(next_minl),.count(minm),.next(next_minm));
+  
+  //hours
+  
+  RTC_counter #(9) hr_lsb (.clk(clk),.rst(rst),.clear(clear_rst),.en(next_minm),.count(hrl),.next(next_hrl));
+  RTC_counter #(2) hr_msb (.clk(clk),.rst(rst),.clear(clear_rst),.en(next_hrl),.count(hrm),.next(next_hrm));
+  
+  //MODULE INSTANTIATION FOR DISPLAYING THE OUTPUT USING 7 SEGMENTED DISPLAY
+  seven_segmented_dis s1(.bcd(secl),.sev_dis(sec_l));
+  seven_segmented_dis sm(.bcd(secm),.sev_dis(sec_m));
+  seven_segmented_dis mm(.bcd(minm),.sev_dis(min_m));
+  seven_segmented_dis ml(.bcd(minl),.sev_dis(min_l));
+  seven_segmented_dis hm(.bcd(hrm),.sev_dis(hr_m));
+  seven_segmented_dis hl(.bcd(hrl),.sev_dis(hr_l)); 
+  
+  
+endmodule
+
+
+//CODE FOR SEVEN SEGMENTED DISPLAY
+module seven_segmented_dis(input [3:0]bcd,output reg [6:0]sev_dis);
+  always@(*)begin
+    case(bcd)
+            4'd0: sev_dis = 7'b1111110;
+            4'd1: sev_dis = 7'b0110000;
+            4'd2: sev_dis = 7'b1101101;
+            4'd3: sev_dis = 7'b1111001;
+            4'd4: sev_dis = 7'b0110011;
+            4'd5: sev_dis = 7'b1011011;
+            4'd6: sev_dis = 7'b1011111;
+            4'd7: sev_dis = 7'b1110000;
+            4'd8: sev_dis = 7'b1111111;
+            4'd9: sev_dis = 7'b1111011;
+            default: sev_dis = 7'b0000000;
+        endcase
+    
+  end
+endmodule

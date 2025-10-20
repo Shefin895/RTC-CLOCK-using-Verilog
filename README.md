@@ -1,0 +1,2 @@
+# RTC-CLOCK-using-Verilog
+Verilog-based Real-Time Clock (RTC) design using counters and timing logic for digital systems.
